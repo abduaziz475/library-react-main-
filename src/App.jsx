@@ -3,7 +3,7 @@ import './App.css';
 
 const demoUsers = [
   { email: 'tabaka@gmail.com', password: '123456789', role: 'user', name: 'Shirin User' },
-  { email: 'tabaka@gmail.com', password: '123456789', role: 'admin', name: 'Shirin Admin' },
+  { email: 'tabaka@gmail.com', password: '987654321', role: 'admin', name: 'Shirin Admin' },
 ];
 
 function App() {
@@ -29,9 +29,8 @@ function App() {
 
 function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('tabaka@gmail.com');
-  const [password, setPassword] = useState('123456789');
+  const [password, setPassword] = useState('');
   const [role, setRole] = useState('user');
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = (event) => {
@@ -91,6 +90,8 @@ function LoginScreen({ onLogin }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tabaka@gmail.com"
+                autoComplete="username"
+                required
               />
             </label>
 
@@ -98,19 +99,13 @@ function LoginScreen({ onLogin }) {
               <span>Parol</span>
               <div className="password-field">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="********"
+                  autoComplete="current-password"
+                  required
                 />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                </button>
               </div>
             </label>
 

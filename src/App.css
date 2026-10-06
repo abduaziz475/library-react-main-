@@ -168,23 +168,6 @@ a {
   color: #9ca3af;
 }
 
-.toggle-password {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: none;
-  background: transparent;
-  color: #374151;
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 6px 8px;
-}
-
-.password-field input {
-  padding-right: 66px;
-}
-
 .error-text {
   color: #dc2626;
   font-size: 0.88rem;
