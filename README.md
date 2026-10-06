@@ -4,7 +4,7 @@
 
 The app is published at [https://abduaziz475.github.io/library-react-main-/](https://abduaziz475.github.io/library-react-main-/).
 
-Pushes to `master` build and deploy the site through the workflow in `.github/workflows/deploy.yml`. In the repository settings, set **Pages → Build and deployment → Source** to **GitHub Actions**.
+Pushes to `master` build and deploy the site through the workflow in `.github/workflows/deploy.yml`. The workflow enables GitHub Pages for the repository; if deployment is blocked, set **Pages → Build and deployment → Source** to **GitHub Actions** in the repository settings.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
