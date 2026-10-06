@@ -1,109 +1,158 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   SectionContainer,
-  SectionHero,
-  SectionHeroText,
-  FilterBar,
-  FilterChip,
-  CatalogGrid,
-  BookCardItem,
-  BookInfo,
-  BookActions,
-  Price,
-  AddButton,
+  ProfilePage,
+  ProfileSidebar,
+  AvatarFrame,
+  StatusBadge,
+  ProfileName,
+  ProfileHandle,
+  ProfileButton,
+  ProfileMeta,
+  MainPanel,
+  MainHeader,
+  MainTitle,
+  HeaderButton,
+  RepoCard,
+  RepoIcon,
+  RepoName,
+  RepoTag,
+  ContributionSection,
+  ContributionHeader,
+  ContributionText,
+  ContributionFilters,
+  TogglePill,
+  ContributionGrid,
+  MonthRow,
+  ContributionRow,
+  ContributionCell,
+  ActivityPanel,
+  Timeline,
+  ActivityRow,
+  ActivityIcon,
+  ActivityText,
+  ActivityMeta,
+  Chart,
+  Bar,
+  BarValue,
 } from './Section.styles';
 
-const books = [
-  {
-    title: 'The Midwich Cuckoos',
-    author: 'John Wyndham',
-    category: 'Classic',
-    price: '$19.50',
-    image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=900&q=80',
-    description: 'A chilling novel about silence, power, and the future of humanity.',
-  },
-  {
-    title: 'The Orchard',
-    author: 'Sarah Pollock',
-    category: 'Drama',
-    price: '$17.00',
-    image: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=900&q=80',
-    description: 'A warm, reflective story about second chances and family roots.',
-  },
-  {
-    title: 'The Long Way Home',
-    author: 'Milo Green',
-    category: 'Adventure',
-    price: '$21.00',
-    image: 'https://images.unsplash.com/photo-1523464862210-25bc8a52bf8d?auto=format&fit=crop&w=900&q=80',
-    description: 'An exploration of courage, memory, and the roads that change us.',
-  },
-  {
-    title: 'The Quiet Hour',
-    author: 'Amelia Stone',
-    category: 'Literature',
-    price: '$16.40',
-    image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=900&q=80',
-    description: 'A poetic collection of life’s gentle, unforgettable moments.',
-  },
-  {
-    title: 'Design Your Day',
-    author: 'Nora Hughes',
-    category: 'Self-Help',
-    price: '$22.80',
-    image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80',
-    description: 'Create a more intentional, fulfilling daily routine with ease.',
-  },
-  {
-    title: 'The Last Atlas',
-    author: 'James Reeve',
-    category: 'History',
-    price: '$18.90',
-    image: 'https://images.unsplash.com/photo-1516979187454-437ec3e2f40d?auto=format&fit=crop&w=900&q=80',
-    description: 'A beautifully told historical journey into forgotten worlds.',
-  },
+const monthNames = ['Okt', 'Noy', 'Dek', 'Yan', 'Feb', 'Mar', 'Apr', 'May', 'Iyun', 'Iyul', 'Avg', 'Sen'];
+
+const rows = [
+  [0, 0, 0, 0, 1, 1, 0, 0, 2, 3, 1, 0],
+  [0, 0, 1, 1, 2, 3, 2, 1, 2, 3, 2, 1],
+  [1, 2, 2, 0, 1, 0, 2, 2, 3, 4, 2, 1],
+  [0, 1, 2, 3, 2, 1, 1, 2, 3, 4, 3, 2],
+  [0, 1, 1, 2, 2, 1, 0, 1, 2, 3, 2, 1],
+  [0, 0, 0, 1, 1, 2, 1, 2, 4, 3, 2, 1],
+  [0, 0, 0, 0, 1, 2, 3, 2, 1, 2, 0, 0],
 ];
 
-const filters = ['All', 'Classic', 'Adventure', 'History', 'Self-Help', 'Drama'];
+const activities = [
+  { title: '3 ta omborcha 10 ta commit yaratil', meta: 'abduaziz475/abduaziz-it-akademiyasi', icon: '◫' },
+  { title: '4 ta ombor yaratil', meta: 'abduaziz475/abduaziz-it-akademiyasi', icon: '□' },
+  { title: '3 ta ombor 10 ta commit yaratil', meta: 'abduaziz475/abduaziz-it-akademiyasi', icon: '◫' },
+];
 
 const Section = () => {
   return (
     <SectionContainer>
-      <SectionHero>
-        <SectionHeroText>
-          <h1>Library collection</h1>
-          <p>
-            Browse carefully curated books from timeless classics to modern reads selected for curious minds and everyday explorers.
-          </p>
-          <FilterBar>
-            {filters.map((filter, index) => (
-              <FilterChip key={filter} className={index === 0 ? 'active' : ''} type="button">
-                {filter}
-              </FilterChip>
-            ))}
-          </FilterBar>
-        </SectionHeroText>
-      </SectionHero>
+      <ProfilePage>
+        <ProfileSidebar>
+          <AvatarFrame>
+            <StatusBadge>◉</StatusBadge>
+          </AvatarFrame>
 
-      <CatalogGrid>
-        {books.map((book) => (
-          <BookCardItem key={book.title}>
-            <img src={book.image} alt={book.title} />
-            <BookInfo>
-              <div className="meta">
-                <span>{book.category}</span>
-                <span>⭐ 4.9</span>
-              </div>
-              <h3>{book.title}</h3>
-              <p>{book.description}</p>
-              <BookActions>
-                <Price>{book.price}</Price>
-                <AddButton type="button">Add to cart</AddButton>
-              </BookActions>
-            </BookInfo>
-          </BookCardItem>
-        ))}
-      </CatalogGrid>
+          <ProfileName>Abdumanonov Abduaziz</ProfileName>
+          <ProfileHandle>abduaziz475</ProfileHandle>
+
+          <ProfileButton type="button">Profilni tahrirlash</ProfileButton>
+
+          <ProfileMeta>
+            <div className="meta-row"><span className="meta-icon">◌</span><span>0 ta obunachi · 2 ta obunachi</span></div>
+            <div className="meta-row"><span className="meta-icon">◔</span><span>06:01 (UTC +12:00)</span></div>
+            <div className="meta-row"><span className="meta-icon">✉</span><span>abduazizabdumanonov6@gmail.com</span></div>
+            <div className="meta-row"><span className="meta-icon">🔗</span><a href="https://react-dark-mode-port-c0d1bolt.hos" target="_blank" rel="noreferrer">react-dark-mode-port-c0d1b... </a></div>
+          </ProfileMeta>
+        </ProfileSidebar>
+
+        <MainPanel>
+          <MainHeader>
+            <MainTitle>Mahkamlangan</MainTitle>
+            <HeaderButton type="button">Pinlarinigiz sozlang</HeaderButton>
+          </MainHeader>
+
+          <RepoCard>
+            <RepoIcon>⌂</RepoIcon>
+            <RepoName>cmd</RepoName>
+            <RepoTag>Ommaiy</RepoTag>
+          </RepoCard>
+
+          <ContributionSection>
+            <ContributionHeader>
+              <ContributionText>O‘tgan yili 104 ta hisa</ContributionText>
+              <ContributionFilters>
+                <span>Hisso sozlamalari</span>
+                <TogglePill type="button">2026-yil</TogglePill>
+              </ContributionFilters>
+            </ContributionHeader>
+
+            <ContributionGrid>
+              <MonthRow>
+                {monthNames.map((month) => (
+                  <span key={month}>{month}</span>
+                ))}
+              </MonthRow>
+
+              {rows.map((row, index) => (
+                <ContributionRow key={index}>
+                  {row.map((value, cellIndex) => (
+                    <ContributionCell key={`${index}-${cellIndex}`} className={`level-${value}`} />
+                  ))}
+                </ContributionRow>
+              ))}
+            </ContributionGrid>
+          </ContributionSection>
+
+          <ActivityPanel>
+            <Timeline>
+              <div style={{ fontSize: '1.2rem', color: '#edf5ff', marginBottom: 8 }}>Hissa qo‘shish faoliyati</div>
+
+              {activities.map((item) => (
+                <ActivityRow key={item.title}>
+                  <ActivityIcon>{item.icon}</ActivityIcon>
+                  <ActivityText>
+                    <div>{item.title}</div>
+                    <ActivityMeta>{item.meta}</ActivityMeta>
+                  </ActivityText>
+                </ActivityRow>
+              ))}
+            </Timeline>
+
+            <Chart>
+              <Bar>
+                <span>3 ta omborda 10 ta commit yaratil</span>
+              </Bar>
+              <Bar>
+                <BarValue $value="72%" />
+              </Bar>
+              <Bar>
+                <span>2 ta omborda 10 ta commit</span>
+              </Bar>
+              <Bar>
+                <BarValue $value="58%" />
+              </Bar>
+              <Bar>
+                <span>4 ta ombor yaratildi</span>
+              </Bar>
+              <Bar>
+                <BarValue $value="81%" />
+              </Bar>
+            </Chart>
+          </ActivityPanel>
+        </MainPanel>
+      </ProfilePage>
     </SectionContainer>
   );
 };
