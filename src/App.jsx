@@ -1,191 +1,134 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 
-const authApiUrl = process.env.REACT_APP_AUTH_API_URL || '';
+const DEMO_CODE_KEY = 'ittat-demo-login';
+const REMEMBERED_SESSION_KEY = 'ittat-remembered-session';
+const DIRECTOR_CODE = 'ITTAT2025';
+
+function readStorage(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 function App() {
-  const [session, setSession] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('ittat-session'));
-    } catch {
-      return null;
-    }
-  });
-  const [checkingSession, setCheckingSession] = useState(Boolean(session));
-  const sessionToken = session?.token;
+  const [session, setSession] = useState(() => readStorage(REMEMBERED_SESSION_KEY, null));
 
   useEffect(() => {
-    if (!sessionToken) {
-      localStorage.removeItem('ittat-session');
-      setCheckingSession(false);
-      return;
-    }
-
-    let active = true;
-    fetch(`${authApiUrl}/api/auth/verify`, {
-      headers: { Authorization: `Bearer ${sessionToken}` },
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error('Session expired');
-        }
-        const result = await response.json();
-        if (active) {
-          setSession((currentSession) => currentSession?.token === sessionToken
-            ? { ...currentSession, user: result.user }
-            : currentSession);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setSession(null);
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setCheckingSession(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [sessionToken]);
-
-  useEffect(() => {
-    if (session) {
-      localStorage.setItem('ittat-session', JSON.stringify(session));
+    if (session?.remember) {
+      localStorage.setItem(REMEMBERED_SESSION_KEY, JSON.stringify(session));
     } else {
-      localStorage.removeItem('ittat-session');
+      localStorage.removeItem(REMEMBERED_SESSION_KEY);
     }
   }, [session]);
 
-  if (checkingSession) {
-    return <main className="auth-page" aria-label="Tekshirilmoqda" />;
+  const handleLogin = (nextSession) => {
+    if (nextSession.remember) {
+      localStorage.setItem(REMEMBERED_SESSION_KEY, JSON.stringify(nextSession));
+    } else {
+      localStorage.removeItem(REMEMBERED_SESSION_KEY);
+    }
+    setSession(nextSession);
+  };
+
+  const handleBack = () => {
+    localStorage.removeItem(REMEMBERED_SESSION_KEY);
+    localStorage.removeItem(DEMO_CODE_KEY);
+    setSession(null);
+  };
+
+  if (session) {
+    return <WelcomeScreen user={session} onBack={handleBack} />;
   }
 
-  if (!session) {
-    return <LoginScreen onLogin={setSession} />;
-  }
-
-  return <BlankWorkspace user={session.user} onLogout={() => setSession(null)} />;
+  return <LoginScreen onLogin={handleLogin} />;
 }
 
 function LoginScreen({ onLogin }) {
-  const [mode, setMode] = useState('user');
-  const [step, setStep] = useState('phone');
-  const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
-  const [directorCode, setDirectorCode] = useState('');
+  const saved = readStorage(DEMO_CODE_KEY, {});
+  const [mode, setMode] = useState(saved.mode || 'user');
+  const [step, setStep] = useState(saved.step || 'phone');
+  const [phone, setPhone] = useState(saved.phone || '');
+  const [generatedCode, setGeneratedCode] = useState(saved.generatedCode || '');
+  const [code, setCode] = useState(saved.code || '');
+  const [repeatCode, setRepeatCode] = useState(saved.repeatCode || '');
+  const [directorCode, setDirectorCode] = useState(saved.directorCode || '');
+  const [directorCodeRepeat, setDirectorCodeRepeat] = useState(saved.directorCodeRepeat || '');
+  const [remember, setRemember] = useState(Boolean(saved.remember));
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [resendIn, setResendIn] = useState(0);
 
   useEffect(() => {
-    if (!resendIn) {
-      return undefined;
-    }
-    const timer = window.setTimeout(() => setResendIn(resendIn - 1), 1000);
-    return () => window.clearTimeout(timer);
-  }, [resendIn]);
+    localStorage.setItem(DEMO_CODE_KEY, JSON.stringify({
+      mode,
+      step,
+      phone,
+      generatedCode,
+      code,
+      repeatCode,
+      directorCode,
+      directorCodeRepeat,
+      remember,
+    }));
+  }, [mode, step, phone, generatedCode, code, repeatCode, directorCode, directorCodeRepeat, remember]);
 
-  const requestCode = async (event) => {
+  const createDemoCode = (event) => {
     event.preventDefault();
+    const nextCode = String(Math.floor(100000 + Math.random() * 900000));
+    setGeneratedCode(nextCode);
+    setCode(nextCode);
+    setRepeatCode('');
+    setStep('code');
     setError('');
-    if (!authApiUrl) {
-      setError('SMS kodi yuborilmadi: kirish serveri sozlanmagan. Telefon raqamingiz xato emas.');
-      return;
-    }
-    setBusy(true);
-
-    try {
-      const response = await fetch(`${authApiUrl}/api/auth/request-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || 'SMS yuborilmadi.');
-      }
-      setStep('code');
-      setResendIn(60);
-    } catch (requestError) {
-      setError(requestError.message || 'Server bilan bog\'lanib bo\'lmadi.');
-    } finally {
-      setBusy(false);
-    }
   };
 
-  const verifyCode = async (event) => {
+  const verifyUser = (event) => {
     event.preventDefault();
-    setError('');
-    if (!authApiUrl) {
-      setError('Kirish serveri sozlanmagan. Administrator server sozlamalarini tekshirishi kerak.');
+    if (code !== generatedCode) {
+      setError('Tasdiqlash kodi noto‘g‘ri');
       return;
     }
-    setBusy(true);
-
-    try {
-      const response = await fetch(`${authApiUrl}/api/auth/verify-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, code }),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || 'Kod noto\'g\'ri yoki muddati tugagan.');
-      }
-      onLogin(result);
-    } catch (requestError) {
-      setError(requestError.message || 'Server bilan bog\'lanib bo\'lmadi.');
-    } finally {
-      setBusy(false);
+    if (repeatCode !== code) {
+      setError('Kodlar bir xil emas');
+      return;
     }
+    onLogin({ role: 'user', phone: phone.trim(), remember });
   };
 
-  const verifyDirector = async (event) => {
+  const verifyDirector = (event) => {
     event.preventDefault();
-    setError('');
-    if (!authApiUrl) {
-      setError('Kirish serveri sozlanmagan. Administrator server sozlamalarini tekshirishi kerak.');
+    if (directorCode !== directorCodeRepeat) {
+      setError('Kodlar bir xil emas');
       return;
     }
-    setBusy(true);
-
-    try {
-      const response = await fetch(`${authApiUrl}/api/auth/director`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: directorCode }),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || 'Direktor kodi noto\'g\'ri.');
-      }
-      onLogin(result);
-    } catch (requestError) {
-      setError(requestError.message || 'Server bilan bog\'lanib bo\'lmadi.');
-    } finally {
-      setBusy(false);
+    if (directorCode !== DIRECTOR_CODE) {
+      setError('Direktor kodi noto‘g‘ri');
+      return;
     }
+    onLogin({ role: 'director', remember });
+  };
+
+  const changeMode = (nextMode) => {
+    setMode(nextMode);
+    setError('');
   };
 
   return (
     <main className="auth-page">
       <div className="login-shell">
-        <header className="brand-row" aria-label="IT TAT o'quv markazi">
-          <img className="brand-logo" src={`${process.env.PUBLIC_URL}/ittat-logo.png`} alt="IT TAT o'quv markazi logotipi" />
+        <header className="brand-row" aria-label="IT TAT logotipi">
+          <img
+            className="brand-logo"
+            src={`${process.env.PUBLIC_URL}/ittat-logo.png`}
+            alt="IT TAT O‘quv markazi"
+          />
         </header>
 
         <section className="login-card">
           <h1>Xush kelibsiz</h1>
-          <p className="login-intro">Platformaga kirish uchun ma'lumotlaringizni kiriting.</p>
-          {!authApiUrl && (
-            <p className="service-notice" role="status">
-              SMS xizmati hali ulanmagan. Telefon raqamingiz xato emas — kirish serveri va Eskiz sozlanishi kerak.
-            </p>
-          )}
+          <p className="login-intro">Platformaga kirish uchun ma’lumotlaringizni kiriting.</p>
 
           <div className="auth-tabs" role="tablist" aria-label="Kirish turi">
             <button
@@ -193,7 +136,7 @@ function LoginScreen({ onLogin }) {
               role="tab"
               aria-selected={mode === 'user'}
               className={mode === 'user' ? 'selected' : ''}
-              onClick={() => { setMode('user'); setError(''); }}
+              onClick={() => changeMode('user')}
             >
               Foydalanuvchi
             </button>
@@ -202,17 +145,17 @@ function LoginScreen({ onLogin }) {
               role="tab"
               aria-selected={mode === 'director'}
               className={mode === 'director' ? 'selected' : ''}
-              onClick={() => { setMode('director'); setError(''); }}
+              onClick={() => changeMode('director')}
             >
-              Direktor
+              Direktor / Admin
             </button>
           </div>
 
           {mode === 'user' && (
-            <form onSubmit={step === 'phone' ? requestCode : verifyCode} className="login-form">
+            <form onSubmit={step === 'phone' ? createDemoCode : verifyUser} className="login-form">
               {step === 'phone' ? (
                 <label>
-                  <span>Telefon raqam</span>
+                  <span>Telefon raqami</span>
                   <div className="input-wrap">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                       <path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
@@ -225,15 +168,17 @@ function LoginScreen({ onLogin }) {
                       placeholder="+998 90 123 45 67"
                       autoComplete="tel"
                       inputMode="tel"
-                      required
                     />
                   </div>
                 </label>
               ) : (
                 <>
-                  <p className="code-hint">+{phone.replace(/\D/g, '')} raqamiga yuborilgan SMS kodni kiriting.</p>
+                  <p className="code-hint">
+                    Demo tasdiqlash kodi: <strong className="demo-code">{generatedCode}</strong>
+                    <span className="demo-note">SMS yuborilmaydi — bu kod faqat demo uchun.</span>
+                  </p>
                   <label>
-                    <span>SMS kod</span>
+                    <span>Tasdiqlash kodi</span>
                     <div className="input-wrap">
                       <svg viewBox="0 0 24 24" aria-hidden="true">
                         <rect x="3" y="5" width="18" height="14" rx="3" />
@@ -246,32 +191,48 @@ function LoginScreen({ onLogin }) {
                         placeholder="6 xonali kod"
                         inputMode="numeric"
                         autoComplete="one-time-code"
-                        pattern="[0-9]{6}"
                         maxLength="6"
                         required
                       />
                     </div>
                   </label>
-                  <div className="code-actions">
-                    <button type="button" className="text-btn" onClick={() => { setStep('phone'); setCode(''); setError(''); }}>
-                      Raqamni o'zgartirish
-                    </button>
-                    <button
-                      type="button"
-                      className="text-btn"
-                      onClick={requestCode}
-                      disabled={busy || resendIn > 0 || !authApiUrl}
-                    >
-                      {resendIn > 0 ? `Qayta yuborish (${resendIn})` : 'Kodni qayta yuborish'}
-                    </button>
-                  </div>
+                  <label>
+                    <span>Kodni qayta kiriting</span>
+                    <div className="input-wrap">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="14" rx="3" />
+                        <path d="m8 12 2.5 2.5L16 9" />
+                      </svg>
+                      <input
+                        type="text"
+                        value={repeatCode}
+                        onChange={(event) => setRepeatCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="Kodni takroran kiriting"
+                        inputMode="numeric"
+                        maxLength="6"
+                        required
+                      />
+                    </div>
+                  </label>
+                  <button type="button" className="text-btn back-link" onClick={() => { setStep('phone'); setError(''); }}>
+                    ← Orqaga
+                  </button>
                 </>
               )}
 
+              <label className="remember-row">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(event) => setRemember(event.target.checked)}
+                />
+                <span>Meni eslab qol</span>
+              </label>
+
               {error && <p className="error-text" role="alert">{error}</p>}
 
-              <button type="submit" className="primary-btn wide-btn" disabled={busy || !authApiUrl}>
-                <span>{busy ? 'Kuting...' : step === 'phone' ? 'SMS kod yuborish' : 'Kodni tasdiqlash'}</span>
+              <button type="submit" className="primary-btn wide-btn">
+                <span>{step === 'phone' ? 'Kirish' : 'Kirish'}</span>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M5 12h14m-6-6 6 6-6 6" />
                 </svg>
@@ -298,12 +259,40 @@ function LoginScreen({ onLogin }) {
                   />
                 </div>
               </label>
+              <label>
+                <span>Kodni qayta kiriting</span>
+                <div className="input-wrap">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="5" y="10" width="14" height="11" rx="2" />
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3" />
+                  </svg>
+                  <input
+                    type="password"
+                    value={directorCodeRepeat}
+                    onChange={(event) => setDirectorCodeRepeat(event.target.value)}
+                    placeholder="Direktor kodini takroran kiriting"
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
+              </label>
+              <label className="remember-row">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(event) => setRemember(event.target.checked)}
+                />
+                <span>Meni eslab qol</span>
+              </label>
               {error && <p className="error-text" role="alert">{error}</p>}
-              <button type="submit" className="primary-btn wide-btn" disabled={busy || !authApiUrl}>
-                <span>{busy ? 'Kuting...' : 'Kirish'}</span>
+              <button type="submit" className="primary-btn wide-btn">
+                <span>Direktor sifatida kirish</span>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M5 12h14m-6-6 6 6-6 6" />
                 </svg>
+              </button>
+              <button type="button" className="text-btn back-link" onClick={() => changeMode('user')}>
+                ← Orqaga
               </button>
             </form>
           )}
@@ -313,25 +302,23 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-function BlankWorkspace({ user, onLogout }) {
+function WelcomeScreen({ user, onBack }) {
   return (
-    <div className="blank-shell">
-      <header className="topbar">
-        <div className="brand-wrap">
-          <div className="logo-mark">IT</div>
-          <span>IT TAT</span>
-        </div>
-
-        <div className="topbar-actions">
-          <span className="user-pill">{user.role === 'director' ? 'Direktor' : 'Foydalanuvchi'}</span>
-          <button type="button" className="primary-btn" onClick={onLogout}>Chiqish</button>
-        </div>
-      </header>
-
-      <main className="blank-page">
-        <div className="canvas" />
-      </main>
-    </div>
+    <main className="auth-page welcome-page">
+      <section className="welcome-card">
+        <img
+          className="brand-logo"
+          src={`${process.env.PUBLIC_URL}/ittat-logo.png`}
+          alt="IT TAT O‘quv markazi"
+        />
+        <p className="welcome-eyebrow">{user.role === 'director' ? 'Direktor / Admin' : 'Foydalanuvchi'}</p>
+        <h1>Xush kelibsiz!</h1>
+        <p>IT TAT platformasiga muvaffaqiyatli kirdingiz.</p>
+        <button type="button" className="text-btn welcome-back" onClick={onBack}>
+          ← Orqaga
+        </button>
+      </section>
+    </main>
   );
 }
 

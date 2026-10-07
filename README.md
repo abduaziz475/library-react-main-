@@ -1,27 +1,21 @@
-# IT TAT kirish sahifasi
+# IT TAT login demo
 
-Frontend GitHub Pages'da, OTP va direktor autentifikatsiya API'si Render'da ishlaydi.
+Responsive IT TAT sign-in page built with React and deployed to GitHub Pages.
 
-## Joylashtirish
+## Demo behavior
 
-1. GitHub Pages manbasi **GitHub Actions** ekanini tekshiring. `master` branch'ga yuborilgan o'zgarishlar frontend'ni build va deploy qiladi.
-2. Render'da **New + → Blueprint** orqali ushbu repozitoriyani tanlab, `render.yaml` xizmatini yarating.
-3. Render so'ragan maxfiy environment variable'larga Eskiz hisobingizdagi `ESKIZ_EMAIL`, `ESKIZ_PASSWORD` va direktor uchun tanlangan `DIRECTOR_CODE` qiymatlarini kiriting. `JWT_SECRET` avtomatik yaratiladi. Maxfiy qiymatlarni GitHub'ga yoki chatga yubormang.
-4. Render'dagi `ittat-auth-api` xizmatining public URL manzilini oling. GitHub repozitoriyasida **Settings → Secrets and variables → Actions → Variables** bo'limida `AUTH_API_URL` nomli repository variable yarating va qiymatiga Render URL'ini kiriting (`https://` bilan, oxirida `/` qo'ymasdan).
-5. GitHub Actions workflow'ni qayta ishga tushiring. Frontend API URL'siz build qilingan bo'lsa, `AUTH_API_URL` qo'shgach workflow'ni qayta ishga tushirish shart.
-6. Eskiz akkauntingizda `4546` SMS yuboruvchi nomi faolligini tekshiring. Boshqa tasdiqlangan sender kerak bo'lsa, Render'dagi `ESKIZ_FROM` qiymatini yangilang.
+- The user login creates a random six-digit demo code in the browser. It is displayed on-screen because no SMS is sent; the first code field is prefilled, and the user confirms it by entering it again.
+- Phone number is optional. The phone, generated demo code, and in-progress form are stored in `localStorage` and restored after refresh.
+- **Meni eslab qol** stores the successful demo session in `localStorage`. Without it, refreshing returns to login.
+- The director demo code is `ITTAT2025` and must be entered twice.
+- The welcome page's **Orqaga** button returns to login and clears the demo session.
 
-Mahalliy frontend uchun `.env.local` faylida `REACT_APP_AUTH_API_URL=https://<render-service-url>` belgilang va `npm start` ni ishga tushiring. Backend'ni alohida terminalda `cd server; npm install; npm start` bilan ishga tushirish mumkin. Render sozlamalarini lokal ishlatishda environment variable sifatida kiriting.
+This is a frontend-only demonstration, not real authentication. Demo codes and the director code are visible or present in the client bundle/browser storage and must not be used to protect real accounts or data.
 
-## Autentifikatsiya
+## Development
 
-- Foydalanuvchi O'zbekiston telefon raqamini kiritadi, SMS kod 5 daqiqa amal qiladi va bir marta ishlatiladi.
-- SMS qayta yuborish kamida 60 soniyadan keyin ochiladi. Telefon va IP bo'yicha urinishlar ham cheklangan.
-- Foydalanuvchi sifatida istalgan tasdiqlangan `+998` raqami kira oladi.
-- Direktor kodi faqat backend environment variable'da saqlanadi, frontend bundle'ga qo'shilmaydi.
-- Kirish tokeni 8 soatda tugaydi. OTP kodlari backend xotirasida saqlanadi; API qayta ishga tushsa, yuborilgan kodlar bekor bo'ladi va yangisini so'rash kerak.
+- `npm start` — run locally.
+- `npm test -- --watchAll=false` — run the login and persistence tests.
+- `npm run build` — create the production build.
 
-## Tekshiruv
-
-- Frontend: `npm test -- --watchAll=false`, `npm run build`
-- Backend: `cd server; npm test`
+Changes pushed to `master` deploy through the GitHub Pages workflow.

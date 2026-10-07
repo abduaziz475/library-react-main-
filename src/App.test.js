@@ -1,37 +1,87 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import App from './App';
+
+const renderApp = () => render(<App />);
 
 beforeEach(() => {
   localStorage.clear();
-  global.fetch = jest.fn();
 });
 
-test('renders user phone verification and separate director sign-in', () => {
-  render(
-    <MemoryRouter>
-      <App />
-    </MemoryRouter>
-  );
+test('renders the IT TAT login with optional phone and remember checkbox', () => {
+  renderApp();
 
+  expect(screen.getByRole('img', { name: /IT TAT/i })).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: 'Xush kelibsiz' })).toBeInTheDocument();
-  expect(screen.getByLabelText(/Telefon raqam/i)).toHaveValue('');
-  expect(screen.getByRole('tab', { name: 'Foydalanuvchi' })).toHaveAttribute('aria-selected', 'true');
-  expect(screen.getByRole('status')).toHaveTextContent(/Telefon raqamingiz xato emas/i);
-  expect(screen.getByRole('button', { name: /SMS kod yuborish/i })).toBeDisabled();
-  expect(screen.queryByText(/Google|GitHub|Royxatdan otish/i)).not.toBeInTheDocument();
+  expect(screen.getByText('Platformaga kirish uchun ma’lumotlaringizni kiriting.')).toBeInTheDocument();
+  expect(screen.getByLabelText(/Telefon raqami/i)).not.toBeRequired();
+  expect(screen.getByLabelText(/Meni eslab qol/i)).not.toBeChecked();
+  expect(screen.queryByText(/Google|GitHub|Ro‘yxatdan o‘tish/i)).not.toBeInTheDocument();
 });
 
-test('does not attempt authentication when the server URL is missing', () => {
-  render(
-    <MemoryRouter>
-      <App />
-    </MemoryRouter>
-  );
+test('generates a demo code and requires matching confirmation before login', () => {
+  renderApp();
 
-  fireEvent.change(screen.getByLabelText(/Telefon raqam/i), { target: { value: '+998 90 123 45 67' } });
-  expect(screen.getByRole('button', { name: /SMS kod yuborish/i })).toBeDisabled();
-  expect(global.fetch).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('tab', { name: 'Direktor' }));
-  expect(screen.getByRole('button', { name: 'Kirish' })).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+  const generatedCode = screen.getByText(/Demo tasdiqlash kodi:/i).textContent.match(/\d{6}/)[0];
+  expect(JSON.parse(localStorage.getItem('ittat-demo-login')).generatedCode).toBe(generatedCode);
+
+  fireEvent.change(screen.getByLabelText('Tasdiqlash kodi'), { target: { value: '111111' } });
+  fireEvent.change(screen.getByLabelText('Kodni qayta kiriting'), { target: { value: '111111' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('Tasdiqlash kodi noto‘g‘ri');
+
+  fireEvent.change(screen.getByLabelText('Tasdiqlash kodi'), { target: { value: generatedCode } });
+  fireEvent.change(screen.getByLabelText('Kodni qayta kiriting'), { target: { value: '222222' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('Kodlar bir xil emas');
+
+  fireEvent.change(screen.getByLabelText('Kodni qayta kiriting'), { target: { value: generatedCode } });
+  fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+  expect(screen.getByRole('heading', { name: 'Xush kelibsiz!' })).toBeInTheDocument();
+  expect(screen.getByText('IT TAT platformasiga muvaffaqiyatli kirdingiz.')).toBeInTheDocument();
+});
+
+test('remembers a successful login across reload and returns to login', () => {
+  const { unmount } = renderApp();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+  const generatedCode = screen.getByText(/Demo tasdiqlash kodi:/i).textContent.match(/\d{6}/)[0];
+  fireEvent.click(screen.getByLabelText(/Meni eslab qol/i));
+  fireEvent.change(screen.getByLabelText('Kodni qayta kiriting'), { target: { value: generatedCode } });
+  fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+  expect(JSON.parse(localStorage.getItem('ittat-remembered-session')).remember).toBe(true);
+
+  unmount();
+  renderApp();
+  expect(screen.getByRole('heading', { name: 'Xush kelibsiz!' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: /Orqaga/i }));
+  expect(screen.getByRole('heading', { name: 'Xush kelibsiz' })).toBeInTheDocument();
+  expect(localStorage.getItem('ittat-remembered-session')).toBeNull();
+});
+
+test('requires the exact director code twice', () => {
+  renderApp();
+  fireEvent.click(screen.getByRole('tab', { name: 'Direktor / Admin' }));
+  fireEvent.change(screen.getByLabelText('Direktor kodi'), { target: { value: 'ITTAT2025' } });
+  fireEvent.change(screen.getByLabelText('Kodni qayta kiriting'), { target: { value: 'WRONG' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Direktor sifatida kirish' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('Kodlar bir xil emas');
+
+  fireEvent.change(screen.getByLabelText('Kodni qayta kiriting'), { target: { value: 'ITTAT2025' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Direktor sifatida kirish' }));
+  expect(screen.getByText('Direktor / Admin', { selector: '.welcome-eyebrow' })).toBeInTheDocument();
+});
+
+test('persists an incomplete login across reload', () => {
+  const { unmount } = renderApp();
+
+  fireEvent.change(screen.getByLabelText(/Telefon raqami/i), { target: { value: '+998 90 123 45 67' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+  const generatedCode = screen.getByText(/Demo tasdiqlash kodi:/i).textContent.match(/\d{6}/)[0];
+  unmount();
+
+  renderApp();
+  expect(screen.getByLabelText(/Tasdiqlash kodi/i)).toHaveValue(generatedCode);
+  expect(screen.getByLabelText(/Kodni qayta kiriting/i)).toHaveValue('');
+  expect(JSON.parse(localStorage.getItem('ittat-demo-login')).phone).toBe('+998 90 123 45 67');
 });

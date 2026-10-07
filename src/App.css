@@ -310,8 +310,8 @@ body {
 }
 
 .brand-row {
-  justify-content: flex-start;
-  margin-bottom: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
   color: #fff;
 }
 
@@ -540,4 +540,107 @@ body {
 .primary-btn:disabled {
   cursor: wait;
   filter: saturate(0.7);
+}
+
+.remember-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 11px !important;
+  color: #c2d7f7 !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  cursor: pointer;
+}
+
+.login-form .remember-row input {
+  width: 21px;
+  height: 21px;
+  margin: 0;
+  accent-color: #04d49f;
+  cursor: pointer;
+}
+
+.demo-code {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 4px 10px;
+  color: #a8ffdf;
+  background: rgba(0, 214, 157, 0.12);
+  border: 1px solid rgba(0, 214, 157, 0.35);
+  border-radius: 7px;
+  font-size: 1.12rem;
+  letter-spacing: 0.13em;
+}
+
+.demo-note {
+  display: block;
+  margin-top: 8px;
+  color: #8faed6;
+  font-size: 0.82rem;
+}
+
+.back-link {
+  align-self: flex-start;
+}
+
+.welcome-page {
+  place-items: center;
+}
+
+.welcome-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 640px);
+  padding: clamp(28px, 6vw, 56px);
+  text-align: center;
+  background: linear-gradient(145deg, rgba(12, 37, 75, 0.72), rgba(5, 20, 47, 0.62));
+  border: 1px solid rgba(62, 145, 255, 0.3);
+  border-radius: 28px;
+  box-shadow: 0 24px 80px rgba(0, 8, 28, 0.4), inset 0 1px rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+}
+
+.welcome-card .brand-logo {
+  margin-bottom: 24px;
+}
+
+.welcome-eyebrow {
+  margin-bottom: 10px;
+  color: #73a8ef;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.welcome-card h1 {
+  margin-bottom: 12px;
+  color: #f7f9ff;
+  font-size: clamp(2.2rem, 7vw, 3.3rem);
+  letter-spacing: -0.045em;
+}
+
+.welcome-card > p:not(.welcome-eyebrow) {
+  color: #a9c4eb;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.welcome-back {
+  margin-top: 32px;
+  padding: 12px 22px;
+  color: #a8ffdf;
+  border: 1px solid rgba(0, 214, 157, 0.42);
+  border-radius: 12px;
+  background: rgba(0, 214, 157, 0.08);
+  font-size: 1rem;
+}
+
+.welcome-back:hover {
+  background: rgba(0, 214, 157, 0.16);
 }
