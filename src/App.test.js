@@ -96,6 +96,40 @@ test('rejects incomplete or non-numeric phone numbers', () => {
   expect(screen.getByLabelText(/Telefon raqami/i)).toHaveValue('123');
   fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
 
-  expect(screen.getByRole('alert')).toHaveTextContent('Telefon raqamini +998 dan keyin 9 ta raqam qilib kiriting.');
+  expect(screen.getByRole('alert')).toHaveTextContent('O‘zbekiston mobil raqamini kiriting');
   expect(screen.queryByText(/Demo tasdiqlash kodi:/i)).not.toBeInTheDocument();
+});
+
+test.each(['90', '97', '93', '91', '94', '95', '99', '77', '88', '50', '33', '20'])(
+  'accepts Uzbekistan mobile prefix %s',
+  (prefix) => {
+    renderApp();
+    fireEvent.change(screen.getByLabelText(/Telefon raqami/i), {
+      target: { value: `${prefix}1234567` },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+
+    expect(screen.getByText(/Demo tasdiqlash kodi:/i)).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  }
+);
+
+test('rejects a complete phone number with an unsupported prefix', () => {
+  renderApp();
+  fireEvent.change(screen.getByLabelText(/Telefon raqami/i), { target: { value: '121234567' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+
+  expect(screen.getByRole('alert')).toHaveTextContent('O‘zbekiston mobil raqamini kiriting');
+  expect(screen.queryByText(/Demo tasdiqlash kodi:/i)).not.toBeInTheDocument();
+});
+
+test('accepts a pasted international Uzbekistan phone number', () => {
+  renderApp();
+  fireEvent.change(screen.getByLabelText(/Telefon raqami/i), {
+    target: { value: '+998 93 123 45 67' },
+  });
+
+  expect(screen.getByLabelText(/Telefon raqami/i)).toHaveValue('931234567');
+  fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+  expect(screen.getByText(/Demo tasdiqlash kodi:/i)).toBeInTheDocument();
 });

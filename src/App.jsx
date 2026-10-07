@@ -4,10 +4,21 @@ import './App.css';
 const DEMO_CODE_KEY = 'ittat-demo-login';
 const REMEMBERED_SESSION_KEY = 'ittat-remembered-session';
 const DIRECTOR_CODE = 'ITTAT2025';
+const UZBEKISTAN_MOBILE_PREFIXES = new Set([
+  '20', '33', '50', '77', '88', '90', '91', '93', '94', '95', '97', '98', '99',
+]);
 
 function getNationalPhoneDigits(value) {
-  const digits = String(value || '').replace(/\D/g, '');
-  return digits.startsWith('998') && digits.length > 9 ? digits.slice(3, 12) : digits.slice(0, 9);
+  const raw = String(value || '').trim();
+  let digits = raw.replace(/\D/g, '');
+  if (raw.startsWith('+998') || /^998[\s(-]/.test(raw)) {
+    digits = digits.slice(3);
+  }
+  return digits.slice(0, 9);
+}
+
+function isValidUzbekistanMobile(phone) {
+  return /^\d{9}$/.test(phone) && UZBEKISTAN_MOBILE_PREFIXES.has(phone.slice(0, 2));
 }
 
 function readStorage(key, fallback) {
@@ -81,8 +92,8 @@ function LoginScreen({ onLogin }) {
 
   const createDemoCode = (event) => {
     event.preventDefault();
-    if (!/^\d{9}$/.test(phone)) {
-      setError('Telefon raqamini +998 dan keyin 9 ta raqam qilib kiriting.');
+    if (!isValidUzbekistanMobile(phone)) {
+      setError('O‘zbekiston mobil raqamini kiriting: +998 dan keyin 9 ta raqam va to‘g‘ri operator kodi bo‘lishi kerak.');
       return;
     }
     const nextCode = String(Math.floor(100000 + Math.random() * 900000));
@@ -175,7 +186,7 @@ function LoginScreen({ onLogin }) {
                       type="tel"
                       value={phone}
                       onChange={(event) => {
-                        setPhone(event.target.value.replace(/\D/g, '').slice(0, 9));
+                        setPhone(getNationalPhoneDigits(event.target.value));
                         setError('');
                       }}
                       placeholder="90 123 45 67"
