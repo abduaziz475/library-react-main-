@@ -1,76 +1,27 @@
-# Getting Started with Create React App
+# IT TAT kirish sahifasi
 
-## Live site
+Frontend GitHub Pages'da, OTP va direktor autentifikatsiya API'si Render'da ishlaydi.
 
-The app is published at [https://abduaziz475.github.io/library-react-main-/](https://abduaziz475.github.io/library-react-main-/).
+## Joylashtirish
 
-Pushes to `master` build and deploy the site through the workflow in `.github/workflows/deploy.yml`. Before the first deployment, set **Pages → Build and deployment → Source** to **GitHub Actions** in the repository settings.
+1. GitHub Pages manbasi **GitHub Actions** ekanini tekshiring. `master` branch'ga yuborilgan o'zgarishlar frontend'ni build va deploy qiladi.
+2. Render'da **New + → Blueprint** orqali ushbu repozitoriyani tanlab, `render.yaml` xizmatini yarating.
+3. Render so'ragan maxfiy environment variable'larga Eskiz hisobingizdagi `ESKIZ_EMAIL`, `ESKIZ_PASSWORD` va direktor uchun tanlangan `DIRECTOR_CODE` qiymatlarini kiriting. `JWT_SECRET` avtomatik yaratiladi. Maxfiy qiymatlarni GitHub'ga yoki chatga yubormang.
+4. Render'dagi `ittat-auth-api` xizmatining public URL manzilini oling. GitHub repozitoriyasida **Settings → Secrets and variables → Actions → Variables** bo'limida `AUTH_API_URL` nomli repository variable yarating va qiymatiga Render URL'ini kiriting (`https://` bilan, oxirida `/` qo'ymasdan).
+5. GitHub Actions workflow'ni qayta ishga tushiring. Frontend API URL'siz build qilingan bo'lsa, `AUTH_API_URL` qo'shgach workflow'ni qayta ishga tushirish shart.
+6. Eskiz akkauntingizda `4546` SMS yuboruvchi nomi faolligini tekshiring. Boshqa tasdiqlangan sender kerak bo'lsa, Render'dagi `ESKIZ_FROM` qiymatini yangilang.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Mahalliy frontend uchun `.env.local` faylida `REACT_APP_AUTH_API_URL=https://<render-service-url>` belgilang va `npm start` ni ishga tushiring. Backend'ni alohida terminalda `cd server; npm install; npm start` bilan ishga tushirish mumkin. Render sozlamalarini lokal ishlatishda environment variable sifatida kiriting.
 
-## Available Scripts
+## Autentifikatsiya
 
-In the project directory, you can run:
+- Foydalanuvchi O'zbekiston telefon raqamini kiritadi, SMS kod 5 daqiqa amal qiladi va bir marta ishlatiladi.
+- SMS qayta yuborish kamida 60 soniyadan keyin ochiladi. Telefon va IP bo'yicha urinishlar ham cheklangan.
+- Foydalanuvchi sifatida istalgan tasdiqlangan `+998` raqami kira oladi.
+- Direktor kodi faqat backend environment variable'da saqlanadi, frontend bundle'ga qo'shilmaydi.
+- Kirish tokeni 8 soatda tugaydi. OTP kodlari backend xotirasida saqlanadi; API qayta ishga tushsa, yuborilgan kodlar bekor bo'ladi va yangisini so'rash kerak.
 
-### `npm start`
+## Tekshiruv
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Frontend: `npm test -- --watchAll=false`, `npm run build`
+- Backend: `cd server; npm test`
