@@ -390,6 +390,15 @@ body {
   stroke-width: 1.8;
 }
 
+.phone-prefix {
+  flex: 0 0 auto;
+  margin-right: 11px;
+  color: #d4e6ff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .login-form .input-wrap input {
   min-width: 0;
   padding: 12px 0;

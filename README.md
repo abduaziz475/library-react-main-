@@ -5,7 +5,7 @@ Responsive IT TAT sign-in page built with React and deployed to GitHub Pages.
 ## Demo behavior
 
 - The user login creates a random six-digit demo code in the browser. It is displayed on-screen because no SMS is sent; the first code field is prefilled, and the user confirms it by entering it again.
-- Phone number is optional. The phone, generated demo code, and in-progress form are stored in `localStorage` and restored after refresh.
+- The user must enter exactly nine digits after the fixed `+998` country prefix. Non-numeric characters are filtered and incomplete numbers are rejected. The phone, generated demo code, and in-progress form are stored in `localStorage` and restored after refresh.
 - **Meni eslab qol** stores the successful demo session in `localStorage`. Without it, refreshing returns to login.
 - The director demo code is `ITTAT2025` and must be entered twice.
 - The welcome page's **Orqaga** button returns to login and clears the demo session.

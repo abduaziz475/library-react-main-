@@ -5,6 +5,11 @@ const DEMO_CODE_KEY = 'ittat-demo-login';
 const REMEMBERED_SESSION_KEY = 'ittat-remembered-session';
 const DIRECTOR_CODE = 'ITTAT2025';
 
+function getNationalPhoneDigits(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  return digits.startsWith('998') && digits.length > 9 ? digits.slice(3, 12) : digits.slice(0, 9);
+}
+
 function readStorage(key, fallback) {
   try {
     const value = localStorage.getItem(key);
@@ -51,7 +56,7 @@ function LoginScreen({ onLogin }) {
   const saved = readStorage(DEMO_CODE_KEY, {});
   const [mode, setMode] = useState(saved.mode || 'user');
   const [step, setStep] = useState(saved.step || 'phone');
-  const [phone, setPhone] = useState(saved.phone || '');
+  const [phone, setPhone] = useState(() => getNationalPhoneDigits(saved.phone));
   const [generatedCode, setGeneratedCode] = useState(saved.generatedCode || '');
   const [code, setCode] = useState(saved.code || '');
   const [repeatCode, setRepeatCode] = useState(saved.repeatCode || '');
@@ -76,6 +81,10 @@ function LoginScreen({ onLogin }) {
 
   const createDemoCode = (event) => {
     event.preventDefault();
+    if (!/^\d{9}$/.test(phone)) {
+      setError('Telefon raqamini +998 dan keyin 9 ta raqam qilib kiriting.');
+      return;
+    }
     const nextCode = String(Math.floor(100000 + Math.random() * 900000));
     setGeneratedCode(nextCode);
     setCode(nextCode);
@@ -94,7 +103,7 @@ function LoginScreen({ onLogin }) {
       setError('Kodlar bir xil emas');
       return;
     }
-    onLogin({ role: 'user', phone: phone.trim(), remember });
+    onLogin({ role: 'user', phone: `+998${phone}`, remember });
   };
 
   const verifyDirector = (event) => {
@@ -161,13 +170,20 @@ function LoginScreen({ onLogin }) {
                       <path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
                       <path d="M10 18h4" />
                     </svg>
+                    <span className="phone-prefix" aria-hidden="true">+998</span>
                     <input
                       type="tel"
                       value={phone}
-                      onChange={(event) => setPhone(event.target.value)}
-                      placeholder="+998 90 123 45 67"
-                      autoComplete="tel"
-                      inputMode="tel"
+                      onChange={(event) => {
+                        setPhone(event.target.value.replace(/\D/g, '').slice(0, 9));
+                        setError('');
+                      }}
+                      placeholder="90 123 45 67"
+                      autoComplete="tel-national"
+                      inputMode="numeric"
+                      maxLength="9"
+                      aria-label="Telefon raqami, +998 dan keyin"
+                      aria-required="true"
                     />
                   </div>
                 </label>

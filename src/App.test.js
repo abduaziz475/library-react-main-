@@ -7,13 +7,14 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-test('renders the IT TAT login with optional phone and remember checkbox', () => {
+test('renders the IT TAT login with a fixed Uzbekistan prefix and remember checkbox', () => {
   renderApp();
 
   expect(screen.getByRole('img', { name: /IT TAT/i })).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: 'Xush kelibsiz' })).toBeInTheDocument();
   expect(screen.getByText('Platformaga kirish uchun ma’lumotlaringizni kiriting.')).toBeInTheDocument();
-  expect(screen.getByLabelText(/Telefon raqami/i)).not.toBeRequired();
+  expect(screen.getByLabelText(/Telefon raqami/i)).toHaveAttribute('aria-required', 'true');
+  expect(screen.getByText('+998')).toBeInTheDocument();
   expect(screen.getByLabelText(/Meni eslab qol/i)).not.toBeChecked();
   expect(screen.queryByText(/Google|GitHub|Ro‘yxatdan o‘tish/i)).not.toBeInTheDocument();
 });
@@ -21,6 +22,7 @@ test('renders the IT TAT login with optional phone and remember checkbox', () =>
 test('generates a demo code and requires matching confirmation before login', () => {
   renderApp();
 
+  fireEvent.change(screen.getByLabelText(/Telefon raqami/i), { target: { value: '901234567' } });
   fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
   const generatedCode = screen.getByText(/Demo tasdiqlash kodi:/i).textContent.match(/\d{6}/)[0];
   expect(JSON.parse(localStorage.getItem('ittat-demo-login')).generatedCode).toBe(generatedCode);
@@ -44,6 +46,7 @@ test('generates a demo code and requires matching confirmation before login', ()
 test('remembers a successful login across reload and returns to login', () => {
   const { unmount } = renderApp();
 
+  fireEvent.change(screen.getByLabelText(/Telefon raqami/i), { target: { value: '901234567' } });
   fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
   const generatedCode = screen.getByText(/Demo tasdiqlash kodi:/i).textContent.match(/\d{6}/)[0];
   fireEvent.click(screen.getByLabelText(/Meni eslab qol/i));
@@ -75,7 +78,7 @@ test('requires the exact director code twice', () => {
 test('persists an incomplete login across reload', () => {
   const { unmount } = renderApp();
 
-  fireEvent.change(screen.getByLabelText(/Telefon raqami/i), { target: { value: '+998 90 123 45 67' } });
+  fireEvent.change(screen.getByLabelText(/Telefon raqami/i), { target: { value: '901234567' } });
   fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
   const generatedCode = screen.getByText(/Demo tasdiqlash kodi:/i).textContent.match(/\d{6}/)[0];
   unmount();
@@ -83,5 +86,16 @@ test('persists an incomplete login across reload', () => {
   renderApp();
   expect(screen.getByLabelText(/Tasdiqlash kodi/i)).toHaveValue(generatedCode);
   expect(screen.getByLabelText(/Kodni qayta kiriting/i)).toHaveValue('');
-  expect(JSON.parse(localStorage.getItem('ittat-demo-login')).phone).toBe('+998 90 123 45 67');
+  expect(JSON.parse(localStorage.getItem('ittat-demo-login')).phone).toBe('901234567');
+});
+
+test('rejects incomplete or non-numeric phone numbers', () => {
+  renderApp();
+
+  fireEvent.change(screen.getByLabelText(/Telefon raqami/i), { target: { value: 'abc123' } });
+  expect(screen.getByLabelText(/Telefon raqami/i)).toHaveValue('123');
+  fireEvent.click(screen.getByRole('button', { name: 'Kirish' }));
+
+  expect(screen.getByRole('alert')).toHaveTextContent('Telefon raqamini +998 dan keyin 9 ta raqam qilib kiriting.');
+  expect(screen.queryByText(/Demo tasdiqlash kodi:/i)).not.toBeInTheDocument();
 });
