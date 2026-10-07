@@ -317,9 +317,12 @@ body {
 
 .brand-logo {
   display: block;
-  width: 210px;
-  height: auto;
-  overflow: visible;
+  width: 152px;
+  height: 152px;
+  border: 1px solid rgba(98, 164, 255, 0.22);
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 12px 34px rgba(0, 74, 198, 0.2);
 }
 
 .login-card {
@@ -449,7 +452,8 @@ body {
   }
 
   .brand-logo {
-    width: 178px;
+    width: 132px;
+    height: 132px;
   }
 
   .login-intro {
@@ -497,6 +501,17 @@ body {
 .code-hint {
   color: #a9c4eb;
   font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.service-notice {
+  margin: -10px 0 20px;
+  padding: 12px 14px;
+  color: #ffda9b;
+  background: rgba(111, 65, 5, 0.2);
+  border: 1px solid rgba(255, 193, 89, 0.38);
+  border-radius: 10px;
+  font-size: 0.9rem;
   line-height: 1.5;
 }
 

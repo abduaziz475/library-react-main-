@@ -92,6 +92,10 @@ function LoginScreen({ onLogin }) {
   const requestCode = async (event) => {
     event.preventDefault();
     setError('');
+    if (!authApiUrl) {
+      setError('SMS kodi yuborilmadi: kirish serveri sozlanmagan. Telefon raqamingiz xato emas.');
+      return;
+    }
     setBusy(true);
 
     try {
@@ -116,6 +120,10 @@ function LoginScreen({ onLogin }) {
   const verifyCode = async (event) => {
     event.preventDefault();
     setError('');
+    if (!authApiUrl) {
+      setError('Kirish serveri sozlanmagan. Administrator server sozlamalarini tekshirishi kerak.');
+      return;
+    }
     setBusy(true);
 
     try {
@@ -139,6 +147,10 @@ function LoginScreen({ onLogin }) {
   const verifyDirector = async (event) => {
     event.preventDefault();
     setError('');
+    if (!authApiUrl) {
+      setError('Kirish serveri sozlanmagan. Administrator server sozlamalarini tekshirishi kerak.');
+      return;
+    }
     setBusy(true);
 
     try {
@@ -163,24 +175,17 @@ function LoginScreen({ onLogin }) {
     <main className="auth-page">
       <div className="login-shell">
         <header className="brand-row" aria-label="IT TAT o'quv markazi">
-          <svg className="brand-logo" viewBox="0 0 180 112" role="img" aria-label="IT TAT">
-            <circle cx="53" cy="56" r="43" fill="none" stroke="currentColor" strokeWidth="7" strokeDasharray="215 55" transform="rotate(24 53 56)" />
-            <path d="M21 37h25c13 0 17-17 31-17h10M18 57h27c12 0 18-13 31-13h13M22 77h23c12 0 18 13 31 13h11" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
-            <circle cx="21" cy="37" r="6" fill="currentColor" />
-            <circle cx="18" cy="57" r="6" fill="currentColor" />
-            <circle cx="22" cy="77" r="6" fill="currentColor" />
-            <circle cx="87" cy="20" r="6" fill="currentColor" />
-            <circle cx="89" cy="44" r="6" fill="currentColor" />
-            <circle cx="87" cy="90" r="6" fill="currentColor" />
-            <text x="101" y="61" fill="currentColor" fontSize="33" fontWeight="800" fontFamily="Inter, Arial, sans-serif">IT TAT</text>
-            <text x="104" y="81" fill="currentColor" fontSize="12" fontWeight="600" fontFamily="Inter, Arial, sans-serif">O'quv markazi</text>
-            <circle cx="169" cy="39" r="2" fill="currentColor" />
-          </svg>
+          <img className="brand-logo" src={`${process.env.PUBLIC_URL}/ittat-logo.png`} alt="IT TAT o'quv markazi logotipi" />
         </header>
 
         <section className="login-card">
           <h1>Xush kelibsiz</h1>
           <p className="login-intro">Platformaga kirish uchun ma'lumotlaringizni kiriting.</p>
+          {!authApiUrl && (
+            <p className="service-notice" role="status">
+              SMS xizmati hali ulanmagan. Telefon raqamingiz xato emas — kirish serveri va Eskiz sozlanishi kerak.
+            </p>
+          )}
 
           <div className="auth-tabs" role="tablist" aria-label="Kirish turi">
             <button
@@ -255,7 +260,7 @@ function LoginScreen({ onLogin }) {
                       type="button"
                       className="text-btn"
                       onClick={requestCode}
-                      disabled={busy || resendIn > 0}
+                      disabled={busy || resendIn > 0 || !authApiUrl}
                     >
                       {resendIn > 0 ? `Qayta yuborish (${resendIn})` : 'Kodni qayta yuborish'}
                     </button>
@@ -265,7 +270,7 @@ function LoginScreen({ onLogin }) {
 
               {error && <p className="error-text" role="alert">{error}</p>}
 
-              <button type="submit" className="primary-btn wide-btn" disabled={busy}>
+              <button type="submit" className="primary-btn wide-btn" disabled={busy || !authApiUrl}>
                 <span>{busy ? 'Kuting...' : step === 'phone' ? 'SMS kod yuborish' : 'Kodni tasdiqlash'}</span>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M5 12h14m-6-6 6 6-6 6" />
@@ -294,7 +299,7 @@ function LoginScreen({ onLogin }) {
                 </div>
               </label>
               {error && <p className="error-text" role="alert">{error}</p>}
-              <button type="submit" className="primary-btn wide-btn" disabled={busy}>
+              <button type="submit" className="primary-btn wide-btn" disabled={busy || !authApiUrl}>
                 <span>{busy ? 'Kuting...' : 'Kirish'}</span>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M5 12h14m-6-6 6 6-6 6" />
@@ -302,7 +307,6 @@ function LoginScreen({ onLogin }) {
               </button>
             </form>
           )}
-          {!authApiUrl && <p className="error-text" role="alert">Kirish serveri sozlanmagan.</p>}
         </section>
       </div>
     </main>
