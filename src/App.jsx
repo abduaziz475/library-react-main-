@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import Platform from './Platform';
 
 const DEMO_CODE_KEY = 'ittat-demo-login';
 const REMEMBERED_SESSION_KEY = 'ittat-remembered-session';
@@ -330,23 +331,7 @@ function LoginScreen({ onLogin }) {
 }
 
 function WelcomeScreen({ user, onBack }) {
-  return (
-    <main className="auth-page welcome-page">
-      <section className="welcome-card">
-        <img
-          className="brand-logo"
-          src={`${process.env.PUBLIC_URL}/ittat-logo.png`}
-          alt="IT TAT O‘quv markazi"
-        />
-        <p className="welcome-eyebrow">{user.role === 'director' ? 'Direktor / Admin' : 'Foydalanuvchi'}</p>
-        <h1>Xush kelibsiz!</h1>
-        <p>IT TAT platformasiga muvaffaqiyatli kirdingiz.</p>
-        <button type="button" className="text-btn welcome-back" onClick={onBack}>
-          ← Orqaga
-        </button>
-      </section>
-    </main>
-  );
+  return <Platform user={user} onBack={onBack} />;
 }
 
 export default App;
